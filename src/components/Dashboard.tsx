@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { User, Complaint, Status } from '../types';
 import { subscribeToComplaints, updateComplaint, addComplaint } from '../services/complaintService';
 import { classifyComplaint } from '../services/geminiService';
@@ -10,21 +11,38 @@ import { NewComplaintModal } from './NewComplaintModal';
 
 const ADMINS = ['admin01', 'admin02', 'admin03'];
 
+const ErrorDisplay: React.FC<{ message: string }> = ({ message }) => (
+    <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <div className="max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+            <ExclamationTriangleIcon className="mx-auto h-16 w-16 text-red-500" />
+            <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">An Error Occurred</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">{message}</p>
+        </div>
+    </div>
+);
+
 export default function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [activeView, setActiveView] = useState('dashboard');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         setLoading(true);
-        const unsubscribe = subscribeToComplaints((newComplaints) => {
-            setComplaints(newComplaints);
-            if (loading) setLoading(false);
-        });
+        setError(null);
+        const unsubscribe = subscribeToComplaints(
+            (newComplaints) => {
+                setComplaints(newComplaints);
+                setLoading(false);
+            },
+            () => {
+                setError("Could not load complaints. This is likely due to Firestore security rules. Please check the README for instructions on how to fix this.");
+                setLoading(false);
+            }
+        );
 
         return () => unsubscribe();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleUpdateStatus = useCallback(async (id: string, newStatus: Status) => {
@@ -69,6 +87,33 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             );
         }
     };
+    
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <div className="flex justify-center items-center h-full">
+                   <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            );
+        }
+        if (error) {
+            return <ErrorDisplay message={error} />;
+        }
+        if (activeView === 'dashboard') {
+            return <DashboardView complaints={complaints} />;
+        }
+        return (
+            <ComplaintList 
+              complaints={complaints} 
+              onUpdateStatus={handleUpdateStatus} 
+              onAssign={handleAssign}
+              admins={ADMINS}
+            />
+        );
+    };
 
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -76,23 +121,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header title="Admin Dashboard" user={user} onLogout={onLogout} onNewComplaint={() => setIsModalOpen(true)} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
-                    {loading ? (
-                        <div className="flex justify-center items-center h-full">
-                           <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    ) : activeView === 'dashboard' ? (
-                        <DashboardView complaints={complaints} />
-                    ) : (
-                        <ComplaintList 
-                          complaints={complaints} 
-                          onUpdateStatus={handleUpdateStatus} 
-                          onAssign={handleAssign}
-                          admins={ADMINS}
-                        />
-                    )}
+                    {renderContent()}
                 </main>
             </div>
             {isModalOpen && <NewComplaintModal onClose={() => setIsModalOpen(false)} onCreate={handleCreateComplaint} />}

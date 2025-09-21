@@ -102,7 +102,34 @@ The application requires API keys for both Google Gemini and Firebase.
 
 3.  **Set Up Firestore:** Go to **Firestore Database** and create a new database. Start in **test mode** for easy setup (you can secure it later with security rules).
 
-### 6. Firestore Data Model
+### 6. Configure Firestore Security Rules
+
+By default, your Firestore database is locked down to prevent unauthorized access. The error `Missing or insufficient permissions` indicates that your security rules are blocking the application from reading data.
+
+For this application to work, you must update your rules to allow authenticated users to read and write data.
+
+1.  Go to your **Firebase Project Console**.
+2.  Navigate to **Firestore Database** from the left-hand menu.
+3.  Click on the **Rules** tab at the top.
+4.  Replace the entire content of the editor with the following rules:
+
+    ```
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        // Allow read and write access only for authenticated users
+        match /{document=**} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+    ```
+
+5.  Click **Publish**. The changes will take effect immediately.
+
+**Security Note:** These rules are suitable for development. For a production application, you should implement more granular rules to restrict access further (e.g., users can only edit their own complaints, admins can edit any).
+
+### 7. Firestore Data Model
 
 The application uses a single top-level collection in Firestore called `complaints`.
 
@@ -128,7 +155,7 @@ Each document in this collection represents a single complaint and has the follo
 
 This structure allows for real-time querying and efficient updates, with a complete history of actions for each complaint.
 
-### 7. Run the Application
+### 8. Run the Application
 
 You are all set! Start the local development server with the following command:
 

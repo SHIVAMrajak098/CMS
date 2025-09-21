@@ -1,13 +1,10 @@
-// FIX: Add a triple-slash directive to include Vite's client types. This provides
-// TypeScript with the necessary type definitions for `import.meta.env`, resolving
-// the error "Property 'env' does not exist on type 'ImportMeta'".
-/// <reference types="vite/client" />
-
+// FIX: The triple-slash directive for Vite client types was causing a "Cannot find type definition file" error.
+// The directive has been removed and `import.meta.env` is cast to `any` as a workaround for the resulting TypeScript error.
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
 // The API key is securely provided by the execution environment through Vite's import.meta.env.
-const API_KEY = import.meta.env.VITE_API_KEY;
+const API_KEY = (import.meta.env as any).VITE_API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {

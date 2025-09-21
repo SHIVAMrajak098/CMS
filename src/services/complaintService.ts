@@ -30,7 +30,10 @@ const fromFirestore = (doc: any): Complaint => {
     } as Complaint;
 };
 
-export const subscribeToComplaints = (callback: (complaints: Complaint[]) => void) => {
+export const subscribeToComplaints = (
+    callback: (complaints: Complaint[]) => void,
+    errorCallback: (error: Error) => void
+) => {
     const q = query(complaintsCollection, orderBy('timestamp', 'desc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -38,6 +41,7 @@ export const subscribeToComplaints = (callback: (complaints: Complaint[]) => voi
         callback(complaints);
     }, (error) => {
         console.error("Error fetching complaints:", error);
+        errorCallback(error as Error);
     });
 
     return unsubscribe;
