@@ -26,8 +26,8 @@ export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComp
                 </button>
                 <div className="flex items-center">
                     <div className="mr-3 text-right">
-                        <p className="text-sm font-medium text-gray-800 dark:text-white">{user.email}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user.role.toLowerCase()}</p>
+                        <p className="text-sm font-medium text-gray-800 dark:text-white">{user?.email}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role?.toLowerCase()}</p>
                     </div>
                      <button
                         onClick={onLogout}
