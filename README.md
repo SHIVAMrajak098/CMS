@@ -20,6 +20,7 @@ This is a comprehensive web portal for a complaint management system, designed f
 -   **Real-Time Status Tracking:** See the latest status of your complaints as they are processed by admins.
 
 ### Core Technology
+-   **Real-Time Backend:** Uses Firebase (Firestore and Authentication) for a persistent, real-time backend.
 -   **AI-Powered Classification:** New complaints are automatically analyzed by the Google Gemini API to determine their urgency and category, enabling faster routing.
 -   **Role-Based Access Control:** A unified interface that intelligently presents different views and capabilities based on whether you are logged in as a User or an Admin.
 
@@ -28,6 +29,7 @@ This is a comprehensive web portal for a complaint management system, designed f
 ## Tech Stack
 
 -   **Frontend:** React 18, TypeScript, Vite
+-   **Backend:** Firebase (Firestore, Authentication)
 -   **Styling:** Tailwind CSS
 -   **AI Model:** Google Gemini API (`@google/genai`)
 -   **Charts:** Recharts
@@ -65,22 +67,42 @@ Install all the necessary project dependencies using npm.
 npm install
 ```
 
-### 4. Set Up Your API Key
+### 4. Set Up Environment Variables
 
-The application requires a Google Gemini API key to power its AI classification features.
+The application requires API keys for both Google Gemini and Firebase.
 
-1.  **Get an API Key:** Create your free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
+1.  **Create an Environment File:** In the root directory of the project, create a new file named `.env`.
 
-2.  **Create an Environment File:** In the root directory of the project, create a new file named `.env`.
+2.  **Add Your Keys:** Open the `.env` file and add the following lines, replacing the placeholder values with your actual credentials.
 
-3.  **Add the Key:** Open the `.env` file and add the following line, replacing `YOUR_API_KEY_HERE` with the key you just obtained.
+    ```env
+    # Google Gemini API Key
+    # Get one from Google AI Studio: https://aistudio.google.com/app/apikey
+    VITE_API_KEY=YOUR_GEMINI_API_KEY_HERE
 
+    # Firebase Project Configuration
+    # Create a project at https://console.firebase.google.com/
+    # Go to Project Settings > General > Your apps > Web app > SDK setup and configuration
+    VITE_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
+    VITE_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT_ID.firebaseapp.com
+    VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
+    VITE_FIREBASE_STORAGE_BUCKET=YOUR_PROJECT_ID.appspot.com
+    VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
+    VITE_FIREBASE_APP_ID=YOUR_APP_ID
     ```
-    VITE_API_KEY=YOUR_API_KEY_HERE
-    ```
-    **Note:** The `VITE_` prefix is required by the Vite build tool to expose the variable to the application.
+    **Note:** The `VITE_` prefix is required by the Vite build tool to expose these variables to the application.
 
-### 5. Run the Application
+### 5. Set Up Firebase
+
+1.  **Enable Authentication:** In your Firebase project console, go to **Authentication** -> **Sign-in method** and enable the **Email/Password** provider.
+
+2.  **Create Test Users:** Go to the **Users** tab in the Authentication section and add the following two users so you can log in:
+    -   `admin@example.com` (password: `password`)
+    -   `user@example.com` (password: `password`)
+
+3.  **Set Up Firestore:** Go to **Firestore Database** and create a new database. Start in **test mode** for easy setup (you can secure it later with security rules).
+
+### 6. Run the Application
 
 You are all set! Start the local development server with the following command:
 
@@ -89,17 +111,3 @@ npm run dev
 ```
 
 Your terminal will display a message indicating that the server is running, usually on `http://localhost:5173`. Open this URL in your web browser to see the application.
-
----
-
-## How to Use
-
-The application has mock authentication set up with two predefined roles. Use the following credentials on the login screen:
-
--   **Admin Access:**
-    -   **Email:** `admin@example.com`
-    -   **Password:** `password`
-
--   **User Access:**
-    -   **Email:** `user@example.com`
-    -   **Password:** `password`

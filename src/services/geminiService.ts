@@ -1,14 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
-// Use Vite's method for accessing environment variables on the client-side
-const API_KEY = import.meta.env.VITE_API_KEY;
+// FIX: The API key must be retrieved from `process.env.API_KEY` to adhere to Gemini API guidelines. This change also resolves the TypeScript error on `import.meta.env`.
+const API_KEY = process.env.API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  console.warn("VITE_API_KEY environment variable not set. AI features will fall back to mock data. Create a .env file in the project root to set it.");
+  console.warn("API_KEY environment variable not set. AI features will fall back to mock data.");
 }
 
 interface ClassificationResult {

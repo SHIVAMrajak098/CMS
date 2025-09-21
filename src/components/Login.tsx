@@ -1,36 +1,36 @@
 import React, { useState } from 'react';
-import { User, Role } from '../types';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 import { LockClosedIcon, AtSymbolIcon } from '@heroicons/react/24/solid';
 
-interface LoginProps {
-    onLogin: (user: User) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Mock login logic. In a real app, this would use Firebase Auth.
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
 
-        setTimeout(() => {
-            if ((email === 'admin@example.com' && password === 'password') || (email === 'user@example.com' && password === 'password')) {
-                const isAdmin = email === 'admin@example.com';
-                onLogin({
-                    id: isAdmin ? 'admin01' : 'user01',
-                    email,
-                    role: isAdmin ? Role.Admin : Role.User,
-                });
-            } else {
-                setError('Invalid credentials. Please try again.');
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // onAuthStateChanged in App.tsx will handle the redirect
+        } catch (err: any) {
+             switch (err.code) {
+                case 'auth/invalid-credential':
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    setError('Invalid credentials. Please check your email and password.');
+                    break;
+                default:
+                    setError('An unexpected error occurred. Please try again.');
+                    break;
             }
+        } finally {
             setIsSubmitting(false);
-        }, 1000);
+        }
     };
 
     return (

@@ -22,7 +22,7 @@ export default function UserDashboard({ user, onLogout }: { user: User; onLogout
     }, []);
 
     const userComplaints = useMemo(() => {
-        return allComplaints.filter(c => c.submittedBy === user.id).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return allComplaints.filter(c => c.submittedBy === user.id);
     }, [allComplaints, user.id]);
 
     const handleCreateComplaint = useCallback(async (text: string, location: { lat: number; lng: number } | null) => {
@@ -38,14 +38,14 @@ export default function UserDashboard({ user, onLogout }: { user: User; onLogout
             location: location || undefined,
         };
 
-        const createdComplaint = await addComplaint(newComplaintData);
+        const complaintId = await addComplaint(newComplaintData);
         // The real-time subscription will automatically update the list.
 
         // Post-creation AI classification runs in the background
         const classification = await classifyComplaint(text);
         if (classification) {
             await updateComplaint(
-                createdComplaint.id,
+                complaintId,
                 { ...classification, status: Status.Classified },
                 { adminId: 'system-ai', action: 'Classified', details: `Urgency: ${classification.urgency}, Category: ${classification.category}` }
             );

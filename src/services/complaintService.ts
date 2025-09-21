@@ -1,122 +1,74 @@
-import { Complaint, Status, Urgency, Category, AuditLogEntry } from '../types';
+import {
+    collection,
+    onSnapshot,
+    addDoc,
+    doc,
+    updateDoc,
+    serverTimestamp,
+    query,
+    orderBy,
+    Timestamp,
+    arrayUnion,
+} from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { Complaint, Status, AuditLogEntry } from '../types';
 
-// Mock data to simulate a Firestore collection
-let mockComplaints: Complaint[] = [
-  {
-    id: 'C001',
-    text: 'Large pothole on Main Street near the intersection with Oak Avenue. It has caused damage to my car tire.',
-    submittedBy: 'user01',
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Status.Assigned,
-    urgency: Urgency.High,
-    category: Category.Infrastructure,
-    assignedTo: 'admin01',
-    auditLog: [
-        { timestamp: new Date().toISOString(), adminId: 'system', action: 'Submitted', details: 'Complaint received.' },
-        { timestamp: new Date().toISOString(), adminId: 'system-ai', action: 'Classified', details: 'Urgency: High, Category: Infrastructure' },
-        { timestamp: new Date().toISOString(), adminId: 'admin01', action: 'Assigned', details: 'Assigned to admin01' }
-    ],
-    location: { lat: 34.0522, lng: -118.2437 }
-  },
-  {
-    id: 'C002',
-    text: 'The city park has broken playground equipment which is a danger to children.',
-    submittedBy: 'user02', // Belongs to a different user
-    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Status.Resolved,
-    urgency: Urgency.High,
-    category: Category.Safety,
-    assignedTo: 'admin02',
-    auditLog: [],
-    location: { lat: 34.055, lng: -118.25 }
-  },
-  {
-    id: 'C003',
-    text: 'My trash was not collected this week on the scheduled day.',
-    submittedBy: 'user01',
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Status.Classified,
-    urgency: Urgency.Medium,
-    category: Category.Service,
-    assignedTo: null,
-    auditLog: [],
-    location: { lat: 34.06, lng: -118.24 }
-  },
-  {
-    id: 'C004',
-    text: 'There was an error on my latest water bill, I was overcharged.',
-    submittedBy: 'user01',
-    timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Status.Closed,
-    urgency: Urgency.Low,
-    category: Category.Billing,
-    assignedTo: 'admin01',
-    auditLog: [],
-  },
-  {
-    id: 'C005',
-    text: 'Streetlight is out on corner of 5th and Elm. It is very dark at night.',
-    submittedBy: 'user02', // Belongs to a different user
-    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    status: Status.InProgress,
-    urgency: Urgency.Medium,
-    category: Category.Infrastructure,
-    assignedTo: 'admin02',
-    auditLog: [],
-  }
-];
+const complaintsCollection = collection(db, 'complaints');
 
-// In a real app, you would use the Firebase SDK here.
-// e.g., import { collection, onSnapshot, addDoc, doc, updateDoc } from 'firebase/firestore';
+// Helper to convert Firestore doc to Complaint object
+const fromFirestore = (doc: any): Complaint => {
+    const data = doc.data();
+    return {
+        ...data,
+        id: doc.id,
+        // Convert Firestore Timestamps to ISO strings
+        timestamp: (data.timestamp as Timestamp)?.toDate().toISOString() || new Date().toISOString(),
+        auditLog: data.auditLog.map((entry: any) => ({
+            ...entry,
+            timestamp: (entry.timestamp as Timestamp)?.toDate().toISOString() || new Date().toISOString(),
+        })),
+    } as Complaint;
+};
 
 export const subscribeToComplaints = (callback: (complaints: Complaint[]) => void) => {
-  // Simulate real-time updates from Firestore's onSnapshot
-  const interval = setInterval(() => {
-    callback([...mockComplaints].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
-  }, 1000);
+    const q = query(complaintsCollection, orderBy('timestamp', 'desc'));
 
-  // Return an unsubscribe function
-  return () => clearInterval(interval);
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const complaints = querySnapshot.docs.map(fromFirestore);
+        callback(complaints);
+    }, (error) => {
+        console.error("Error fetching complaints:", error);
+    });
+
+    return unsubscribe;
 };
 
-
-export const addComplaint = async (complaint: Omit<Complaint, 'id' | 'timestamp' | 'auditLog'>): Promise<Complaint> => {
-  // Simulate adding a document to Firestore with addDoc
-  await new Promise(resolve => setTimeout(resolve, 500)); // simulate network latency
-  
-  const newComplaint: Complaint = {
-    ...complaint,
-    id: `C${String(mockComplaints.length + 1).padStart(3, '0')}`,
-    timestamp: new Date().toISOString(),
-    auditLog: [{
-        timestamp: new Date().toISOString(),
+export const addComplaint = async (complaint: Omit<Complaint, 'id' | 'timestamp' | 'auditLog'>): Promise<string> => {
+    const newAuditEntry = {
+        timestamp: serverTimestamp(),
         adminId: complaint.submittedBy,
         action: 'Submitted',
-        details: 'Complaint created.' // Generic message for both users and admins
-    }]
-  };
+        details: 'Complaint created.',
+    };
 
-  mockComplaints.unshift(newComplaint);
-  return newComplaint;
+    const newDoc = await addDoc(complaintsCollection, {
+        ...complaint,
+        timestamp: serverTimestamp(),
+        auditLog: [newAuditEntry],
+    });
+    return newDoc.id;
 };
 
-export const updateComplaint = async (complaintId: string, updates: Partial<Complaint>, auditEntry: Omit<AuditLogEntry, 'timestamp'>): Promise<Complaint> => {
-    // Simulate updating a document in Firestore with updateDoc
-    await new Promise(resolve => setTimeout(resolve, 300));
+export const updateComplaint = async (complaintId: string, updates: Partial<Complaint>, auditEntry: Omit<AuditLogEntry, 'timestamp'>): Promise<void> => {
+    const complaintRef = doc(db, 'complaints', complaintId);
     
-    const index = mockComplaints.findIndex(c => c.id === complaintId);
-    if (index !== -1) {
-        const newAuditLogEntry: AuditLogEntry = {
-            ...auditEntry,
-            timestamp: new Date().toISOString(),
-        };
-
-        mockComplaints[index] = { 
-            ...mockComplaints[index], 
-            ...updates,
-            auditLog: [...mockComplaints[index].auditLog, newAuditLogEntry]
-        };
-        return mockComplaints[index];
-    }
-    throw new Error('Complaint not found');
+    const newAuditLogEntry = {
+        ...auditEntry,
+        timestamp: serverTimestamp(),
+    };
+    
+    await updateDoc(complaintRef, {
+        ...updates,
+        auditLog: arrayUnion(newAuditLogEntry),
+    });
 };

@@ -36,8 +36,9 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
 
     const handleAssign = useCallback(async (id: string, adminId: string) => {
         const complaint = complaints.find(c => c.id === id);
-        if (complaint && complaint.assignedTo !== adminId) {
-             await updateComplaint(id, { assignedTo: adminId, status: Status.Assigned }, { adminId: user.id, action: `Assigned to ${adminId}`, details: `Previously assigned to ${complaint.assignedTo || 'Unassigned'}` });
+        const newAssignedTo = adminId === "" ? null : adminId;
+        if (complaint && complaint.assignedTo !== newAssignedTo) {
+             await updateComplaint(id, { assignedTo: newAssignedTo, status: Status.Assigned }, { adminId: user.id, action: `Assigned to ${newAssignedTo || 'Unassigned'}`, details: `Previously assigned to ${complaint.assignedTo || 'Unassigned'}` });
         }
     }, [complaints, user.id]);
 
@@ -46,7 +47,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
 
         const newComplaintData: Omit<Complaint, 'id' | 'timestamp' | 'auditLog'> = {
             text,
-            submittedBy: user.id, // Or a generic 'admin-created' user
+            submittedBy: user.id,
             status: Status.Submitted,
             urgency: null,
             category: null,
@@ -54,15 +55,15 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             location: location || undefined,
         };
 
-        const createdComplaint = await addComplaint(newComplaintData);
+        const complaintId = await addComplaint(newComplaintData);
         
-        // The real-time subscription will automatically update the list, so no direct state update is needed here.
+        // The real-time subscription will automatically update the list.
 
-        // Post-creation AI classification
+        // Post-creation AI classification runs in the background
         const classification = await classifyComplaint(text);
         if (classification) {
             await updateComplaint(
-                createdComplaint.id,
+                complaintId,
                 { ...classification, status: Status.Classified },
                 { adminId: 'system-ai', action: 'Classified', details: `Urgency: ${classification.urgency}, Category: ${classification.category}` }
             );
