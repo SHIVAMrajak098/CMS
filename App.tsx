@@ -1,8 +1,7 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import Blocked from './components/Blocked';
+import UserDashboard from './components/UserDashboard';
 import { User, Role } from './types';
 
 // Mock authentication check. In a real app, this would involve checking Firebase Auth state,
@@ -50,11 +49,11 @@ function App() {
         return <Login onLogin={handleLogin} />;
     }
 
-    if (user.role !== Role.Admin) {
-        return <Blocked onLogout={handleLogout} />;
+    if (user.role === Role.Admin) {
+        return <Dashboard user={user} onLogout={handleLogout} />;
     }
 
-    return <Dashboard user={user} onLogout={handleLogout} />;
+    return <UserDashboard user={user} onLogout={handleLogout} />;
 }
 
 export default App;

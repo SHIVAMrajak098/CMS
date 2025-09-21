@@ -1,18 +1,18 @@
-
 import React from 'react';
 import { User } from '../types';
 import { BellIcon, ArrowRightOnRectangleIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
 interface HeaderProps {
+    title: string;
     user: User;
     onLogout: () => void;
     onNewComplaint: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, onLogout, onNewComplaint }) => {
+export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComplaint }) => {
     return (
         <header className="flex items-center justify-between h-20 px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-             <h1 className="text-xl font-semibold text-gray-800 dark:text-white">Admin Dashboard</h1>
+             <h1 className="text-xl font-semibold text-gray-800 dark:text-white">{title}</h1>
             <div className="flex items-center space-x-4">
                 <button 
                     onClick={onNewComplaint}

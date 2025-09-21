@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { Complaint, Status, Urgency, Category } from '../types';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -59,7 +60,8 @@ export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaint
                     <h3 className="font-bold text-lg mb-4">Complaints by Category</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
-                            <Pie data={categoryData} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#8884d8" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                            {/* FIX: The 'percent' prop from recharts can be undefined. Using `typeof percent === 'number'` provides a more robust type guard to prevent runtime errors. */}
+                            <Pie data={categoryData} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#8884d8" dataKey="value" nameKey="name" label={({ name, percent }) => (typeof percent === 'number' ? `${name} ${(percent * 100).toFixed(0)}%` : name)}>
                                 {categoryData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}

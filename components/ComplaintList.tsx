@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Complaint, Status, Urgency, Category } from '../types';
 import { format } from 'date-fns';
@@ -54,27 +53,64 @@ const ComplaintRow: React.FC<{ complaint: Complaint; onUpdateStatus: Function; o
     </tr>
 );
 
+const FilterSelect: React.FC<{ value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }> = ({ value, onChange, children }) => (
+    <select
+        value={value}
+        onChange={onChange}
+        className="text-sm rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+    >
+        {children}
+    </select>
+);
+
+
 export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpdateStatus, onAssign, admins }) => {
     const [filterStatus, setFilterStatus] = useState<Status | 'all'>('all');
+    const [filterUrgency, setFilterUrgency] = useState<Urgency | 'all'>('all');
+    const [filterAssigned, setFilterAssigned] = useState<string>('all');
+
 
     const filteredComplaints = useMemo(() => {
-        if (filterStatus === 'all') return complaints;
-        return complaints.filter(c => c.status === filterStatus);
-    }, [complaints, filterStatus]);
+        let result = complaints;
+
+        if (filterStatus !== 'all') {
+            result = result.filter(c => c.status === filterStatus);
+        }
+
+        if (filterUrgency !== 'all') {
+            result = result.filter(c => c.urgency === filterUrgency);
+        }
+
+        if (filterAssigned !== 'all') {
+            if (filterAssigned === 'unassigned') {
+                result = result.filter(c => c.assignedTo === null);
+            } else {
+                result = result.filter(c => c.assignedTo === filterAssigned);
+            }
+        }
+
+        return result;
+    }, [complaints, filterStatus, filterUrgency, filterAssigned]);
+
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">All Complaints</h2>
-                <div>
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value as Status | 'all')}
-                        className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
+                <div className="flex items-center space-x-3">
+                    <FilterSelect value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as Status | 'all')}>
                         <option value="all">All Statuses</option>
                         {Object.values(Status).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                    </FilterSelect>
+                    <FilterSelect value={filterUrgency} onChange={(e) => setFilterUrgency(e.target.value as Urgency | 'all')}>
+                        <option value="all">All Urgencies</option>
+                        {Object.values(Urgency).map(u => <option key={u} value={u}>{u}</option>)}
+                    </FilterSelect>
+                    <FilterSelect value={filterAssigned} onChange={(e) => setFilterAssigned(e.target.value)}>
+                        <option value="all">All Admins</option>
+                        <option value="unassigned">Unassigned</option>
+                        {admins.map(admin => <option key={admin} value={admin}>{admin}</option>)}
+                    </FilterSelect>
                 </div>
             </div>
             <div className="overflow-x-auto">

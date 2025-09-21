@@ -1,14 +1,44 @@
 
 import React, { useState } from 'react';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 
 interface NewComplaintModalProps {
     onClose: () => void;
-    onCreate: (text: string) => Promise<void>;
+    onCreate: (text: string, location: { lat: number; lng: number } | null) => Promise<void>;
 }
 
 export const NewComplaintModal: React.FC<NewComplaintModalProps> = ({ onClose, onCreate }) => {
     const [text, setText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [locationError, setLocationError] = useState('');
+
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationStatus('error');
+            setLocationError('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        setLocationStatus('loading');
+        setLocationError('');
+        setLocation(null);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setLocationStatus('success');
+                setLocation({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                });
+            },
+            () => {
+                setLocationStatus('error');
+                setLocationError('Unable to retrieve your location. Please check your browser permissions.');
+            }
+        );
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -16,7 +46,7 @@ export const NewComplaintModal: React.FC<NewComplaintModalProps> = ({ onClose, o
 
         setIsSubmitting(true);
         try {
-            await onCreate(text);
+            await onCreate(text, location);
         } catch (error) {
             console.error("Failed to create complaint:", error);
         } finally {
@@ -32,21 +62,45 @@ export const NewComplaintModal: React.FC<NewComplaintModalProps> = ({ onClose, o
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="p-6">
-                        <label htmlFor="complaint-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Complaint Details
-                        </label>
-                        <textarea
-                            id="complaint-text"
-                            rows={6}
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            placeholder="Enter the full text of the complaint..."
-                            required
-                        />
-                         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            After creation, the complaint will be automatically classified by AI.
-                        </p>
+                        <div>
+                            <label htmlFor="complaint-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Complaint Details
+                            </label>
+                            <textarea
+                                id="complaint-text"
+                                rows={6}
+                                value={text}
+                                onChange={(e) => setText(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                placeholder="Enter the full text of the complaint..."
+                                required
+                            />
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                After creation, the complaint will be automatically classified by AI.
+                            </p>
+                        </div>
+                        <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Attach Location (Optional)
+                            </label>
+                            <div className="mt-1 flex items-center space-x-3">
+                                <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    disabled={locationStatus === 'loading'}
+                                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600 disabled:opacity-50"
+                                >
+                                    <MapPinIcon className="w-5 h-5 mr-2" />
+                                    {locationStatus === 'loading' ? 'Fetching...' : 'Get Current Location'}
+                                </button>
+                                {locationStatus === 'success' && location && (
+                                    <p className="text-sm text-green-600 dark:text-green-400">Location captured!</p>
+                                )}
+                            </div>
+                             {locationStatus === 'error' && (
+                                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{locationError}</p>
+                             )}
+                        </div>
                     </div>
                     <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 flex justify-end space-x-3 rounded-b-lg">
                         <button

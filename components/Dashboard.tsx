@@ -43,7 +43,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
         }
     }, [complaints, user.id]);
 
-    const handleCreateComplaint = async (text: string) => {
+    const handleCreateComplaint = async (text: string, location: { lat: number; lng: number } | null) => {
         setIsModalOpen(false);
 
         const newComplaintData: Omit<Complaint, 'id' | 'timestamp' | 'auditLog'> = {
@@ -53,6 +53,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             urgency: null,
             category: null,
             assignedTo: null,
+            location: location || undefined,
         };
 
         const createdComplaint = await addComplaint(newComplaintData);
@@ -73,7 +74,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
             <Sidebar activeView={activeView} setActiveView={setActiveView} />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header user={user} onLogout={onLogout} onNewComplaint={() => setIsModalOpen(true)} />
+                <Header title="Admin Dashboard" user={user} onLogout={onLogout} onNewComplaint={() => setIsModalOpen(true)} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                     {loading ? (
                         <div className="flex justify-center items-center h-full">

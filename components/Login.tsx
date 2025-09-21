@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Role } from '../types';
 import { LockClosedIcon, AtSymbolIcon } from '@heroicons/react/24/solid';
@@ -38,8 +37,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
             <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                 <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Admin Portal</h2>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to manage complaints</p>
+                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Complaint Management System</h2>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to your account</p>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="rounded-md shadow-sm -space-y-px">
@@ -56,7 +55,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address (admin@example.com)"
+                                placeholder="Email address"
                             />
                         </div>
                         <div className="relative">
@@ -72,7 +71,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Password (password)"
+                                placeholder="Password (it's 'password')"
                             />
                         </div>
                     </div>
@@ -87,7 +86,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         </button>
                     </div>
                      <div className="text-center text-xs text-gray-500 dark:text-gray-400">
-                        <p>Try `user@example.com` to see the blocked screen.</p>
+                        <p>Use <b>admin@example.com</b> for the admin view, or <b>user@example.com</b> for the user view.</p>
                     </div>
                 </form>
             </div>
