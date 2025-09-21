@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { Complaint, Status, Urgency, Category } from '../types';
+import { Complaint, Status, Urgency, Category, Department } from '../types';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ChartPieIcon, DocumentCheckIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { ChartPieIcon, DocumentCheckIcon, ExclamationCircleIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
-const StatCard: React.FC<{ title: string; value: number; icon: React.ElementType; color: string }> = ({ title, value, icon: Icon, color }) => (
+const StatCard: React.FC<{ title: string; value: number | string; icon: React.ElementType; color: string }> = ({ title, value, icon: Icon, color }) => (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center">
         <div className={`p-3 rounded-full mr-4 ${color}`}>
             <Icon className="h-8 w-8 text-white" />
@@ -17,7 +17,7 @@ const StatCard: React.FC<{ title: string; value: number; icon: React.ElementType
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
     if (percent === 0) return null;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -32,10 +32,20 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 
 export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
     const stats = useMemo(() => {
+        const departmentCounts = complaints.reduce((acc, c) => {
+            if (c.department) {
+                acc[c.department] = (acc[c.department] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<Department, number>);
+        
+        const busiestDepartment = Object.entries(departmentCounts).sort((a, b) => b[1] - a[1])[0] || ['N/A'];
+
         return {
             total: complaints.length,
             open: complaints.filter(c => c.status !== Status.Resolved && c.status !== Status.Closed).length,
             highUrgency: complaints.filter(c => c.urgency === Urgency.High).length,
+            busiestDepartment: busiestDepartment[0]
         };
     }, [complaints]);
 
@@ -49,30 +59,31 @@ export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaint
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
     }, [complaints]);
 
-    const urgencyData = useMemo(() => {
+    const departmentData = useMemo(() => {
         const counts = complaints.reduce((acc, c) => {
-            if (c.urgency) {
-                acc[c.urgency] = (acc[c.urgency] || 0) + 1;
+            if (c.department) {
+                acc[c.department] = (acc[c.department] || 0) + 1;
             }
             return acc;
-        }, {} as Record<Urgency, number>);
+        }, {} as Record<Department, number>);
         return Object.entries(counts).map(([name, value]) => ({ name, value }));
     }, [complaints]);
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Complaints" value={stats.total} icon={ChartPieIcon} color="bg-blue-500" />
                 <StatCard title="Open Complaints" value={stats.open} icon={DocumentCheckIcon} color="bg-green-500" />
                 <StatCard title="High Urgency" value={stats.highUrgency} icon={ExclamationCircleIcon} color="bg-red-500" />
+                <StatCard title="Busiest Dept." value={stats.busiestDepartment} icon={BuildingOffice2Icon} color="bg-purple-500" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h3 className="font-bold text-lg mb-4">Complaints by Category</h3>
+                    <h3 className="font-bold text-lg mb-4">Complaints by Department</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
-                            <Pie data={categoryData} cx="50%" cy="50%" labelLine={false} label={renderCustomizedLabel} outerRadius={120} fill="#8884d8" dataKey="value" nameKey="name">
-                                {categoryData.map((entry, index) => (
+                            <Pie data={departmentData} cx="50%" cy="50%" labelLine={false} label={renderCustomizedLabel} outerRadius={120} fill="#8884d8" dataKey="value" nameKey="name">
+                                {departmentData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
@@ -82,9 +93,9 @@ export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaint
                     </ResponsiveContainer>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h3 className="font-bold text-lg mb-4">Complaints by Urgency</h3>
-                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={urgencyData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <h3 className="font-bold text-lg mb-4">Complaints by Category</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={categoryData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(128, 128, 128, 0.2)" />
                             <XAxis dataKey="name" />
                             <YAxis />

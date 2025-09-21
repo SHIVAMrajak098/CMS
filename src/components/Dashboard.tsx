@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { User, Complaint, Status } from '../types';
+import { User, Complaint, Status, Notification } from '../types';
 import { subscribeToComplaints, updateComplaint, addComplaint } from '../services/complaintService';
 import { classifyComplaint } from '../services/geminiService';
+import { subscribeToNotifications, addNotification, markNotificationAsRead } from '../services/notificationService';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { ComplaintList } from './ComplaintList';
 import { DashboardView } from './DashboardView';
 import { NewComplaintModal } from './NewComplaintModal';
+import { NotificationPanel } from './NotificationPanel';
+
 
 const ADMINS = ['admin01', 'admin02', 'admin03'];
 
@@ -23,15 +26,17 @@ const ErrorDisplay: React.FC<{ message: string }> = ({ message }) => (
 
 export default function Dashboard({ user, onLogout }: { user: User; onLogout: () => void }) {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeView, setActiveView] = useState('dashboard');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     useEffect(() => {
         setLoading(true);
         setError(null);
-        const unsubscribe = subscribeToComplaints(
+        const unsubscribeComplaints = subscribeToComplaints(
             (newComplaints) => {
                 setComplaints(newComplaints);
                 setLoading(false);
@@ -42,7 +47,14 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             }
         );
 
-        return () => unsubscribe();
+        const unsubscribeNotifications = subscribeToNotifications((newNotifications) => {
+            setNotifications(newNotifications);
+        });
+
+        return () => {
+            unsubscribeComplaints();
+            unsubscribeNotifications();
+        };
     }, []);
 
     const handleUpdateStatus = useCallback(async (id: string, newStatus: Status) => {
@@ -69,25 +81,31 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             status: Status.Submitted,
             urgency: null,
             category: null,
+            department: null,
             assignedTo: null,
             location: location || undefined,
         };
 
         const complaintId = await addComplaint(newComplaintData);
         
-        // The real-time subscription will automatically update the list.
-
         // Post-creation AI classification runs in the background
         const classification = await classifyComplaint(text);
         if (classification) {
             await updateComplaint(
                 complaintId,
                 { ...classification, status: Status.Classified },
-                { adminId: 'system-ai', action: 'Classified', details: `Urgency: ${classification.urgency}, Category: ${classification.category}` }
+                { adminId: 'system-ai', action: 'Classified', details: `Urgency: ${classification.urgency}, Category: ${classification.category}, Department: ${classification.department}` }
             );
+            // Create a notification for the new assignment
+            await addNotification({
+                complaintId: complaintId,
+                message: `Complaint #${complaintId.substring(0, 4)} auto-assigned to ${classification.department}.`,
+            });
         }
     };
     
+    const unreadNotificationCount = notifications.filter(n => !n.read).length;
+
     const renderContent = () => {
         if (loading) {
             return (
@@ -119,7 +137,21 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
             <Sidebar activeView={activeView} setActiveView={setActiveView} />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header title="Admin Dashboard" user={user} onLogout={onLogout} onNewComplaint={() => setIsModalOpen(true)} />
+                <Header 
+                    title="Admin Dashboard" 
+                    user={user} 
+                    onLogout={onLogout} 
+                    onNewComplaint={() => setIsModalOpen(true)}
+                    unreadCount={unreadNotificationCount}
+                    onToggleNotifications={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                />
+                 {isNotificationsOpen && (
+                    <NotificationPanel 
+                        notifications={notifications} 
+                        onClose={() => setIsNotificationsOpen(false)} 
+                        onMarkAsRead={markNotificationAsRead}
+                    />
+                )}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">
                     {renderContent()}
                 </main>

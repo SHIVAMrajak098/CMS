@@ -26,6 +26,14 @@ export enum Category {
   Other = 'Other',
 }
 
+export enum Department {
+  PublicWorks = 'Public Works',
+  Utilities = 'Utilities',
+  ParksAndRec = 'Parks and Recreation',
+  Administration = 'Administration',
+  General = 'General',
+}
+
 export interface User {
   id: string;
   email: string;
@@ -47,7 +55,16 @@ export interface Complaint {
   status: Status;
   urgency: Urgency | null;
   category: Category | null;
+  department: Department | null;
   assignedTo: string | null; // Admin ID
   auditLog: AuditLogEntry[];
   location?: { lat: number; lng: number };
+}
+
+export interface Notification {
+  id: string;
+  complaintId: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
 }

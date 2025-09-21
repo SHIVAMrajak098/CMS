@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Complaint, Status, Urgency } from '../types';
+import { Complaint, Status, Urgency, Department } from '../types';
 import { format } from 'date-fns';
 
 interface ComplaintListProps {
@@ -23,6 +23,7 @@ const ComplaintRow: React.FC<{ complaint: Complaint; onUpdateStatus: Function; o
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{complaint.category || 'N/A'}</td>
         <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${complaint.urgency ? urgencyColors[complaint.urgency] : ''}`}>{complaint.urgency || 'N/A'}</td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{complaint.department || 'N/A'}</td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{format(new Date(complaint.timestamp), 'MMM d, yyyy h:mm a')}</td>
         <td className="px-6 py-4 whitespace-nowrap">
             <select
@@ -63,6 +64,7 @@ const FilterSelect: React.FC<{ value: string; onChange: (e: React.ChangeEvent<HT
 export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpdateStatus, onAssign, admins }) => {
     const [filterStatus, setFilterStatus] = useState<Status | 'all'>('all');
     const [filterUrgency, setFilterUrgency] = useState<Urgency | 'all'>('all');
+    const [filterDepartment, setFilterDepartment] = useState<Department | 'all'>('all');
     const [filterAssigned, setFilterAssigned] = useState<string>('all');
 
 
@@ -72,11 +74,12 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
         if (filterStatus !== 'all') {
             result = result.filter(c => c.status === filterStatus);
         }
-
         if (filterUrgency !== 'all') {
             result = result.filter(c => c.urgency === filterUrgency);
         }
-
+        if (filterDepartment !== 'all') {
+            result = result.filter(c => c.department === filterDepartment);
+        }
         if (filterAssigned !== 'all') {
             if (filterAssigned === 'unassigned') {
                 result = result.filter(c => !c.assignedTo);
@@ -86,7 +89,7 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
         }
 
         return result;
-    }, [complaints, filterStatus, filterUrgency, filterAssigned]);
+    }, [complaints, filterStatus, filterUrgency, filterDepartment, filterAssigned]);
 
 
     return (
@@ -102,6 +105,10 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
                         <option value="all">All Urgencies</option>
                         {Object.values(Urgency).map(u => <option key={u} value={u}>{u}</option>)}
                     </FilterSelect>
+                    <FilterSelect label="Department" value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value as Department | 'all')}>
+                        <option value="all">All Departments</option>
+                        {Object.values(Department).map(d => <option key={d} value={d}>{d}</option>)}
+                    </FilterSelect>
                     <FilterSelect label="Assigned To" value={filterAssigned} onChange={(e) => setFilterAssigned(e.target.value)}>
                         <option value="all">All Admins</option>
                         <option value="unassigned">Unassigned</option>
@@ -113,7 +120,7 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            {['ID', 'Complaint', 'Category', 'Urgency', 'Date', 'Status', 'Assigned To'].map(header => (
+                            {['ID', 'Complaint', 'Category', 'Urgency', 'Department', 'Date', 'Status', 'Assigned To'].map(header => (
                                 <th key={header} scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{header}</th>
                             ))}
                         </tr>
@@ -123,7 +130,7 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
                            <ComplaintRow key={complaint.id} complaint={complaint} onUpdateStatus={onUpdateStatus} onAssign={onAssign} admins={admins} />
                        )) : (
                            <tr>
-                               <td colSpan={7} className="text-center py-8 text-gray-500">No complaints match the current filter.</td>
+                               <td colSpan={8} className="text-center py-8 text-gray-500">No complaints match the current filter.</td>
                            </tr>
                        )}
                     </tbody>

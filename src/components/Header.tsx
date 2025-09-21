@@ -7,11 +7,13 @@ interface HeaderProps {
     user: User;
     onLogout: () => void;
     onNewComplaint: () => void;
+    unreadCount: number;
+    onToggleNotifications: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComplaint }) => {
+export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComplaint, unreadCount, onToggleNotifications }) => {
     return (
-        <header className="flex items-center justify-between h-20 px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <header className="flex items-center justify-between h-20 px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 z-10">
              <h1 className="text-xl font-semibold text-gray-800 dark:text-white">{title}</h1>
             <div className="flex items-center space-x-4">
                 <button 
@@ -21,8 +23,14 @@ export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComp
                     <PlusCircleIcon className="w-5 h-5 mr-2" />
                     New Complaint
                 </button>
-                <button className="p-2 text-gray-500 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                <button 
+                    onClick={onToggleNotifications}
+                    className="relative p-2 text-gray-500 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
                     <BellIcon className="h-6 w-6" />
+                    {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 block h-2 w-2 transform translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span>
+                    )}
                 </button>
                 <div className="flex items-center">
                     <div className="mr-3 text-right">
