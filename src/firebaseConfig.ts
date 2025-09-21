@@ -1,10 +1,8 @@
-// FIX: The triple-slash directive for Vite client types was causing a "Cannot find type definition file" error.
-// The directive has been removed and `import.meta.env` is cast to `any` as a workaround for the resulting TypeScript error.
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
-const env = import.meta.env as any;
+const env = import.meta.env;
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

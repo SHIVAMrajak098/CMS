@@ -1,16 +1,16 @@
-// FIX: The triple-slash directive for Vite client types was causing a "Cannot find type definition file" error.
-// The directive has been removed and `import.meta.env` is cast to `any` as a workaround for the resulting TypeScript error.
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
-// The API key is securely provided by the execution environment through Vite's import.meta.env.
-const API_KEY = (import.meta.env as any).VITE_API_KEY;
+// FIX: Adhere to guideline to use process.env.API_KEY for the Gemini API key.
+// The API key is securely provided by the execution environment.
+const API_KEY = process.env.API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  console.warn("VITE_API_KEY environment variable not set. AI features will fall back to mock data.");
+  // FIX: Update warning message to reflect the change to process.env.API_KEY.
+  console.warn("API_KEY environment variable not set. AI features will fall back to mock data.");
 }
 
 interface ClassificationResult {

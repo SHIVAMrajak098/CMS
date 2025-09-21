@@ -49,7 +49,7 @@ export const subscribeToComplaints = (
 
 export const addComplaint = async (complaint: Omit<Complaint, 'id' | 'timestamp' | 'auditLog'>): Promise<string> => {
     const newAuditEntry = {
-        timestamp: serverTimestamp(),
+        timestamp: Timestamp.now(), // Use a client-side timestamp for the initial log to avoid array error
         adminId: complaint.submittedBy,
         action: 'Submitted',
         details: 'Complaint created.',
