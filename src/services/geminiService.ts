@@ -1,14 +1,19 @@
+// FIX: Add a triple-slash directive to include Vite's client types. This provides
+// TypeScript with the necessary type definitions for `import.meta.env`, resolving
+// the error "Property 'env' does not exist on type 'ImportMeta'".
+/// <reference types="vite/client" />
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
-// FIX: The API key must be retrieved from `process.env.API_KEY` to adhere to Gemini API guidelines. This change also resolves the TypeScript error on `import.meta.env`.
-const API_KEY = process.env.API_KEY;
+// The API key is securely provided by the execution environment through Vite's import.meta.env.
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  console.warn("API_KEY environment variable not set. AI features will fall back to mock data.");
+  console.warn("VITE_API_KEY environment variable not set. AI features will fall back to mock data.");
 }
 
 interface ClassificationResult {
