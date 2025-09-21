@@ -1,17 +1,15 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
-// The API key is securely provided by the execution environment.
-const API_KEY = process.env.API_KEY;
+// Use Vite's method for accessing environment variables on the client-side
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  console.warn("API_KEY environment variable not set. AI features will fall back to mock data.");
+  console.warn("VITE_API_KEY environment variable not set. AI features will fall back to mock data. Create a .env file in the project root to set it.");
 }
-
 
 interface ClassificationResult {
   urgency: Urgency;

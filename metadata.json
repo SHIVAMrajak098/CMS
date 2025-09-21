@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Admin Complaint Management System",
-  "description": "A web-based admin portal for a complaint management system. Admins can view, assign, update, and analyze all user complaints in real-time. The system uses AI to automatically classify complaints by urgency and category.",
+  "name": "Complaint Management System",
+  "description": "A web portal for a complaint management system. Admins can manage all complaints, while users can submit and track their own. Uses AI for automatic classification.",
   "requestFramePermissions": []
 }
