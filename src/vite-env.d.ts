@@ -1,7 +1,5 @@
-// FIX: The reference to "vite/client" is causing an error. We will manually define the necessary types for `import.meta.env` and `process.env` instead by commenting out the failing reference and providing our own definitions below.
-// /// <reference types="vite/client" />
-
 interface ImportMetaEnv {
+  readonly VITE_API_KEY: string;
   readonly VITE_FIREBASE_API_KEY: string;
   readonly VITE_FIREBASE_AUTH_DOMAIN: string;
   readonly VITE_FIREBASE_PROJECT_ID: string;
@@ -14,10 +12,11 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-// Per Gemini API guidelines, process.env.API_KEY must be used.
-// We declare `process` here to make it available to TypeScript globally.
-declare const process: {
-  env: {
-    API_KEY?: string;
+// Since we are defining `process.env.API_KEY` in vite.config.ts,
+// we must declare its type for TypeScript to recognize it. This merges
+// with the global `process` type definitions.
+declare namespace NodeJS {
+  interface ProcessEnv {
+    readonly API_KEY: string;
   }
-};
+}

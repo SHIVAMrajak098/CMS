@@ -68,7 +68,7 @@ export const updateComplaint = async (complaintId: string, updates: Partial<Comp
     
     const newAuditLogEntry = {
         ...auditEntry,
-        timestamp: serverTimestamp(),
+        timestamp: Timestamp.now(), // FIX: Use a client-side timestamp as serverTimestamp() is not allowed in arrayUnion.
     };
     
     await updateDoc(complaintRef, {

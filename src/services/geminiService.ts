@@ -1,16 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Urgency, Category } from '../types';
 
-// FIX: Adhere to guideline to use process.env.API_KEY for the Gemini API key.
-// The API key is securely provided by the execution environment.
+// The API key is securely provided by the execution environment via Vite's 'define' config.
 const API_KEY = process.env.API_KEY;
 
 let ai: GoogleGenAI | null = null;
 if (API_KEY) {
   ai = new GoogleGenAI({ apiKey: API_KEY });
 } else {
-  // FIX: Update warning message to reflect the change to process.env.API_KEY.
-  console.warn("API_KEY environment variable not set. AI features will fall back to mock data.");
+  console.warn("API_KEY environment variable not set. AI features will fall back to mock data. Ensure VITE_API_KEY is in your .env file.");
 }
 
 interface ClassificationResult {
