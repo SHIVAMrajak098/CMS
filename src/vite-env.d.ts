@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 interface ImportMetaEnv {
   readonly VITE_API_KEY: string;
   readonly VITE_FIREBASE_API_KEY: string;
@@ -10,13 +12,4 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
-}
-
-// Since we are defining `process.env.API_KEY` in vite.config.ts,
-// we must declare its type for TypeScript to recognize it. This merges
-// with the global `process` type definitions.
-declare namespace NodeJS {
-  interface ProcessEnv {
-    readonly API_KEY: string;
-  }
 }

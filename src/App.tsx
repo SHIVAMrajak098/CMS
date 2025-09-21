@@ -1,16 +1,24 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { auth } from './firebaseConfig';
+import { auth, initializationError } from './firebaseConfig';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
+import Blocked from './components/Blocked';
 import { User, Role } from './types';
+import DebugEnv from './components/DebugEnv';
+import useIsMobile from './hooks/useIsMobile';
 
 function App() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
+        if (initializationError) {
+            setLoading(false);
+            return;
+        }
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
             if (firebaseUser) {
                 // In a real app, role management would be more robust (e.g., custom claims)
@@ -32,6 +40,10 @@ function App() {
     const handleLogout = useCallback(() => {
         signOut(auth).catch((error) => console.error("Logout failed", error));
     }, []);
+    
+    if (initializationError) {
+        return <DebugEnv error={initializationError} />;
+    }
 
     if (loading) {
         return (
@@ -52,7 +64,12 @@ function App() {
         return <Dashboard user={user} onLogout={handleLogout} />;
     }
 
-    return <UserDashboard user={user} onLogout={handleLogout} />;
+    // User Role: Enforce mobile view
+    if (isMobile) {
+        return <UserDashboard user={user} onLogout={handleLogout} />;
+    } else {
+        return <Blocked onLogout={handleLogout} />;
+    }
 }
 
 export default App;
