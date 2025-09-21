@@ -102,7 +102,33 @@ The application requires API keys for both Google Gemini and Firebase.
 
 3.  **Set Up Firestore:** Go to **Firestore Database** and create a new database. Start in **test mode** for easy setup (you can secure it later with security rules).
 
-### 6. Run the Application
+### 6. Firestore Data Model
+
+The application uses a single top-level collection in Firestore called `complaints`.
+
+#### `complaints` Collection
+
+Each document in this collection represents a single complaint and has the following structure:
+
+| Field         | Type                               | Description                                                                                             |
+| ------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `text`        | `string`                           | The full text content of the complaint submitted by the user.                                           |
+| `submittedBy` | `string`                           | The Firebase Authentication UID of the user who created the complaint.                                  |
+| `timestamp`   | `Timestamp`                        | A server-generated timestamp indicating when the complaint was created. Used for sorting.                 |
+| `status`      | `string`                           | The current status of the complaint (e.g., `Submitted`, `Classified`, `Resolved`).                      |
+| `urgency`     | `string` / `null`                  | The AI-classified urgency of the complaint (e.g., `High`, `Medium`, `Low`). Initially `null`.           |
+| `category`    | `string` / `null`                  | The AI-classified category (e.g., `Infrastructure`, `Service`). Initially `null`.                       |
+| `assignedTo`  | `string` / `null`                  | The UID of the admin assigned to handle this complaint. `null` if unassigned.                           |
+| `location`    | `Map` (optional)                   | An object containing the geographical coordinates. e.g., `{ lat: 34.05, lng: -118.24 }`                 |
+| `auditLog`    | `Array` of `Map`                   | An array that tracks all changes made to the complaint. Each entry in the array is an object with:      |
+|               |                                    | - `timestamp`: `Timestamp` of the event.                                                                |
+|               |                                    | - `adminId`: `string` UID of the actor (`system`, `system-ai`, or an admin).                          |
+|               |                                    | - `action`: `string` describing the action (e.g., `Submitted`, `Status changed`).                     |
+|               |                                    | - `details`: `string` with more information about the change.                                           |
+
+This structure allows for real-time querying and efficient updates, with a complete history of actions for each complaint.
+
+### 7. Run the Application
 
 You are all set! Start the local development server with the following command:
 
