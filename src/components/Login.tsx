@@ -88,8 +88,8 @@ const Login: React.FC = () => {
                      <div className="text-sm text-left text-gray-500 dark:text-gray-400 p-4 mt-4 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50">
                         <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Test Credentials:</h4>
                         <p><b className="font-medium text-gray-800 dark:text-gray-200">Admin Email:</b> admin@example.com</p>
-                        <p><b className="font-medium text-gray-800 dark:text-gray-200">Dept Head (Public Works):</b> manager@publicworks.com</p>
-                        <p><b className="font-medium text-gray-800 dark:text-gray-200">Dept Head (Utilities):</b> manager@utilities.com</p>
+                        <p><b className="font-medium text-gray-800 dark:text-gray-200">Dept Head (Sanitation):</b> manager@sanitation.com</p>
+                        <p><b className="font-medium text-gray-800 dark:text-gray-200">Dept Head (PWD):</b> manager@pwd.com</p>
                         <p><b className="font-medium text-gray-800 dark:text-gray-200">User Email:</b> user@example.com</p>
                         <p><b className="font-medium text-gray-800 dark:text-gray-200">Password:</b> password</p>
                     </div>

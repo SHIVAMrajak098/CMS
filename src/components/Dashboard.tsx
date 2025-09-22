@@ -3,7 +3,7 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { User, Complaint, Status, Notification, Role } from '../types';
 import { subscribeToComplaints, updateComplaint, addComplaint } from '../services/complaintService';
 import { classifyComplaint } from '../services/geminiService';
-import { subscribeToNotifications, addNotification, markNotificationAsRead } from '../services/notificationService';
+import { subscribeToNotifications, addNotification, markNotificationAsRead, markMultipleNotificationsAsRead } from '../services/notificationService';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { ComplaintList } from './ComplaintList';
@@ -111,6 +111,13 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
         }
     };
     
+    const handleMarkAllAsRead = useCallback(async () => {
+        const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+        if (unreadIds.length > 0) {
+            await markMultipleNotificationsAsRead(unreadIds);
+        }
+    }, [notifications]);
+
     const unreadNotificationCount = notifications.filter(n => !n.read).length;
     
     const title = user.role === Role.DepartmentHead && user.department
@@ -162,6 +169,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
                         notifications={notifications} 
                         onClose={() => setIsNotificationsOpen(false)} 
                         onMarkAsRead={markNotificationAsRead}
+                        onMarkAllRead={handleMarkAllAsRead}
                     />
                 )}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-6">

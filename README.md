@@ -1,10 +1,10 @@
-# Complaint Management System
+# Complaint Management System v2.0
 
-This is a comprehensive portal for a complaint management system. The application serves two distinct roles:
-1.  **Admin Portal (Web):** A powerful, desktop-first interface for administrators to manage, track, and analyze all user-submitted complaints.
-2.  **User Portal (Mobile):** A streamlined, mobile-first experience for users to submit new complaints and track the status of their existing submissions.
+This is a comprehensive, real-time portal for a complaint management system, now fully powered by **Firebase** and enhanced with intelligent classification via the **Google Gemini API**. The application serves three distinct roles with tailored user experiences.
 
-The system uses the Google Gemini API for intelligent, automatic classification of new complaints and Firebase for a real-time backend.
+1.  **Admin Portal (Web):** A powerful, desktop-first interface for administrators to manage, track, and analyze all user-submitted complaints across all departments.
+2.  **Department Head Portal (Web):** A scoped-down desktop view for department managers to handle complaints relevant only to their specific department (e.g., Public Works, Utilities).
+3.  **User Portal (Mobile):** A streamlined, mobile-first experience for users to submit new complaints and track the status of their submissions.
 
 ---
 
@@ -12,27 +12,31 @@ The system uses the Google Gemini API for intelligent, automatic classification 
 
 The application is designed with a clear separation of concerns based on user roles.
 
-### 👑 Admin Portal (Web Interface)
-
+### 👑 Admin Portal
 -   **Intended Device:** Desktop or tablet browsers.
--   **Access:** Log in with an admin account (e.g., `admin@example.com`).
--   **Purpose:** Provides a full suite of tools for complaint management, including an analytics dashboard, a filterable list of all complaints, and the ability to assign tasks and update statuses.
+-   **Access:** `admin@example.com`
+-   **Purpose:** Provides a full suite of tools for complaint management, including an analytics dashboard, a filterable list of *all* complaints, and the ability to assign tasks and update statuses.
 
-### 👤 User Portal (Mobile Interface)
+### 👔 Department Head Portal
+-   **Intended Device:** Desktop or tablet browsers.
+-   **Access:** `manager@publicworks.com` or `manager@utilities.com`
+-   **Purpose:** A focused dashboard for department leaders. They can view analytics and manage complaints that have been automatically assigned to their department by the AI.
 
+### 👤 User Portal
 -   **Intended Device:** Mobile phones.
--   **Access:** Log in with a user account (e.g., `user@example.com`) on a mobile device or by using browser developer tools to simulate one.
--   **Purpose:** Offers a focused experience for end-users. They can quickly submit a new complaint (optionally with their GPS location) and view the status of their past submissions. Access from a desktop browser is intentionally blocked to guide users to the intended mobile experience.
+-   **Access:** `user@example.com` on a mobile device or by using browser developer tools to simulate one.
+-   **Purpose:** Offers a focused experience for end-users. They can quickly submit a new complaint and view the status of their past submissions. Access from a desktop browser is intentionally blocked.
 
 ---
 
 ## Features
 
-### Admin Role (Web)
--   **Analytics Dashboard:** View key metrics like total complaints, open issues, and high-urgency tickets. Visualize data with charts for complaints by category and urgency.
--   **Real-Time Complaint List:** See all submitted complaints in a filterable and sortable table.
--   **Advanced Filtering:** Filter complaints by Status, Urgency, or Assigned Admin.
--   **Status & Assignment Management:** Update the status of a complaint or assign it to an admin directly from the list.
+### Admin & Department Head Roles (Web)
+-   **Real-Time Analytics Dashboard:** View key metrics like total complaints, open issues, and high-urgency tickets. Visualize data with charts for complaints by category and department.
+-   **Live Complaint List:** See submitted complaints appear in real-time in a filterable and sortable table.
+-   **Advanced Filtering:** Filter complaints by Status, Urgency, Department (Admins only), or Assigned Admin.
+-   **Direct Management:** Update the status of a complaint or assign it to a specific team member directly from the list.
+-   **Notifications:** Admins receive real-time notifications when new complaints are classified and assigned to a department.
 -   **Create Complaints:** Admins can submit new complaints on behalf of users.
 
 ### User Role (Mobile)
@@ -42,9 +46,9 @@ The application is designed with a clear separation of concerns based on user ro
 -   **Real-Time Status Tracking:** See the latest status of your complaints as they are processed by admins.
 
 ### Core Technology
--   **Real-Time Backend:** Uses Firebase (Firestore and Authentication) for a persistent, real-time backend.
--   **AI-Powered Classification:** New complaints are automatically analyzed by the Google Gemini API to determine their urgency and category, enabling faster routing.
--   **Role-Based Access Control:** A unified application that intelligently presents different views based on user role and device type.
+-   **Real-Time Backend:** Uses **Firebase (Firestore and Authentication)** for a persistent, live-updating backend.
+-   **AI-Powered Classification:** New complaints are automatically analyzed by the **Google Gemini API** to determine their urgency, category, and the correct **department** for assignment.
+-   **Role-Based Access Control (RBAC):** A unified application that intelligently presents different views and capabilities based on user role.
 
 ---
 
@@ -67,8 +71,8 @@ Follow these instructions to get the project up and running on your local machin
 ### 1. Prerequisites
 
 -   [Node.js](https://nodejs.org/) (v18.x or later)
--   [npm](https://www.npmjs.com/) or another package manager
--   [Git](https://git-scm.com/)
+-   [npm](https://www.npmjs.com/)
+-   A Google account for Firebase and Google AI Studio.
 
 ### 2. Clone & Install
 
@@ -104,15 +108,19 @@ npm install
 
 ### 4. Set Up Firebase
 
-1.  **Enable Authentication:** In your Firebase console, go to **Authentication** > **Sign-in method** and enable **Email/Password**.
+1.  **Create a Firebase Project:** Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
 
-2.  **Create Test Users:** Go to the **Users** tab and add two users:
-    -   `admin@example.com` (password: `password`)
-    -   `user@example.com` (password: `password`)
+2.  **Enable Authentication:** In your new project, go to **Authentication** > **Sign-in method** and enable **Email/Password**.
 
-3.  **Set Up Firestore:** Go to **Firestore Database**, create a new database, and start in **test mode**.
+3.  **Create Test Users:** Go to the **Users** tab and add the following users (the password for all is `password`):
+    -   `admin@example.com`
+    -   `manager@publicworks.com`
+    -   `manager@utilities.com`
+    -   `user@example.com`
 
-4.  **Configure Firestore Security Rules:** Your database is locked down by default. To allow the app to work, go to the **Rules** tab in Firestore and replace the contents with the following to allow access for any authenticated user:
+4.  **Set Up Firestore:** Go to **Firestore Database**, create a new database, and start in **test mode** (this allows initial access).
+
+5.  **Configure Firestore Security Rules:** Your database is insecure in test mode. Go to the **Rules** tab in Firestore and replace the contents with the following to allow access only for authenticated users:
 
     ```
     rules_version = '2';
@@ -125,37 +133,36 @@ npm install
       }
     }
     ```
-    Click **Publish**. For production, you should implement more granular security rules.
+    Click **Publish**. For a production app, you would implement more granular security rules.
 
 ### 5. Run the Application
 
-Start the local development server.
+Start the local development server. **Important:** If the server was already running when you created the `.env` file, you must stop it (`Ctrl+C`) and restart it.
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` (or the URL provided) in your browser.
+Open `http://localhost:5173` (or the URL provided) in your browser. If you see a configuration error screen, double-check your `.env` file and restart the server.
 
 ---
 
 ## How to Test
 
 ### Testing the Admin Portal
-
 1.  Open the application in a desktop browser.
-2.  Log in with the credentials:
-    -   **Email:** `admin@example.com`
-    -   **Password:** `password`
-3.  You should see the full-featured admin dashboard.
+2.  Log in with **Email:** `admin@example.com`, **Password:** `password`.
+3.  You should see the full-featured admin dashboard with data for all departments.
+
+### Testing the Department Head Portal
+1.  Open the application in a desktop browser.
+2.  Log in with **Email:** `manager@publicworks.com`, **Password:** `password`.
+3.  You should see a dashboard scoped to the "Public Works" department. Create a new complaint as an admin or user with text like "There is a huge pothole on Elm Street" and it should appear here after being classified by the AI.
 
 ### Testing the User Portal
-
 1.  Open the application in a desktop browser.
-2.  **Open Developer Tools:** Press `F12` or `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Opt+I` (Mac).
-3.  **Enable Device Simulation:** Click the "Toggle device toolbar" icon (it looks like a phone and tablet). This will switch the view to a mobile device emulator. Select a device like "iPhone 12 Pro" from the dropdown.
+2.  **Open Developer Tools:** Press `F12` or `Ctrl+Shift+I`.
+3.  **Enable Device Simulation:** Click the "Toggle device toolbar" icon (looks like a phone and tablet). Select a device like "iPhone 12 Pro".
 4.  **Refresh the page** while in device simulation mode.
-5.  Log in with the credentials:
-    -   **Email:** `user@example.com`
-    -   **Password:** `password`
-6.  You should see the mobile-optimized user dashboard. If you toggle device simulation off and refresh, you will see the "Blocked" screen.
+5.  Log in with **Email:** `user@example.com`, **Password:** `password`.
+6.  You should see the mobile-optimized user dashboard. If you toggle device simulation off and refresh, you will see the "Mobile Experience Recommended" screen.

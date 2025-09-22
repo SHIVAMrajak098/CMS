@@ -27,12 +27,12 @@ function App() {
 
                 if (email === 'admin@example.com') {
                     role = Role.Admin;
-                } else if (email === 'manager@publicworks.com') {
+                } else if (email === 'manager@sanitation.com') {
+                    role = Role.DepartmentHead;
+                    department = Department.Sanitation;
+                } else if (email === 'manager@pwd.com') {
                     role = Role.DepartmentHead;
                     department = Department.PublicWorks;
-                } else if (email === 'manager@utilities.com') {
-                    role = Role.DepartmentHead;
-                    department = Department.Utilities;
                 }
                 
                 setUser({

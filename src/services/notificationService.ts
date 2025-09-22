@@ -70,3 +70,14 @@ export const markNotificationAsRead = async (notificationId: string): Promise<vo
         read: true,
     });
 };
+
+export const markMultipleNotificationsAsRead = async (notificationIds: string[]): Promise<void> => {
+    if (!db || notificationIds.length === 0) {
+        return;
+    }
+    const promises = notificationIds.map(id => {
+        const notificationRef = doc(db, 'notifications', id);
+        return updateDoc(notificationRef, { read: true });
+    });
+    await Promise.all(promises);
+};

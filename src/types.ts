@@ -20,20 +20,24 @@ export enum Urgency {
 }
 
 export enum Category {
-  Infrastructure = 'Infrastructure',
-  Service = 'Service',
-  Safety = 'Safety',
-  Billing = 'Billing',
+  WasteManagement = 'Waste Management',
+  WaterAndSewage = 'Water & Sewage',
+  RoadsAndTransport = 'Roads & Transport',
+  Electricity = 'Electricity',
+  PublicHealth = 'Public Health',
+  IllegalConstruction = 'Illegal Construction',
   Other = 'Other',
 }
 
 export enum Department {
-  PublicWorks = 'Public Works',
-  Utilities = 'Utilities',
-  ParksAndRec = 'Parks and Recreation',
-  Administration = 'Administration',
-  General = 'General',
+  Sanitation = 'Sanitation Department',
+  JalNigam = 'Jal Nigam (Water)',
+  PublicWorks = 'Public Works Department (PWD)',
+  ElectricityBoard = 'Electricity Board',
+  Health = 'Health Department',
+  MunicipalCorporation = 'Municipal Corporation',
 }
+
 
 export interface User {
   id: string;

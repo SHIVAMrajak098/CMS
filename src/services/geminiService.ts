@@ -25,20 +25,21 @@ export const classifyComplaint = async (complaintText: string): Promise<Classifi
     return {
       urgency: Urgency.Medium,
       category: Category.Other,
-      department: Department.General,
+      department: Department.MunicipalCorporation,
     };
   }
   
   try {
     const prompt = `
-      Analyze the following complaint and classify its urgency, category, and the appropriate department to handle it.
+      Analyze the following complaint from a citizen in India and classify its urgency, category, and the appropriate municipal department to handle it.
       Departments are: ${Object.values(Department).join(', ')}.
-      - Public Works handles issues like potholes, roads, and infrastructure.
-      - Utilities handles billing, water, and trash collection.
-      - Parks and Recreation handles parks and public spaces.
-      - Administration handles general inquiries or payment issues.
-      - General is for anything else.
-      
+      - Sanitation Department handles garbage collection, street cleaning, and waste management.
+      - Jal Nigam (Water) handles water supply issues, leaks, and sewage problems.
+      - Public Works Department (PWD) handles potholes, road repairs, and public infrastructure.
+      - Electricity Board handles power outages, billing issues, and street lights.
+      - Health Department handles public health concerns like stray animals or sanitation issues.
+      - Municipal Corporation handles illegal construction, property tax, and general administration.
+
       Complaint: "${complaintText}"
       
       Provide the output in JSON format.
@@ -81,7 +82,7 @@ export const classifyComplaint = async (complaintText: string): Promise<Classifi
       return result as ClassificationResult;
     } else {
       console.error("Gemini response did not match expected schema:", result);
-      return { urgency: Urgency.Medium, category: Category.Other, department: Department.General };
+      return { urgency: Urgency.Medium, category: Category.Other, department: Department.MunicipalCorporation };
     }
 
   } catch (error) {
@@ -90,7 +91,7 @@ export const classifyComplaint = async (complaintText: string): Promise<Classifi
     return {
       urgency: Urgency.Medium,
       category: Category.Other,
-      department: Department.General,
+      department: Department.MunicipalCorporation,
     };
   }
 };

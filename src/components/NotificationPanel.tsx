@@ -7,9 +7,10 @@ interface NotificationPanelProps {
     notifications: Notification[];
     onClose: () => void;
     onMarkAsRead: (id: string) => void;
+    onMarkAllRead: () => void;
 }
 
-export const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, onClose, onMarkAsRead }) => {
+export const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, onClose, onMarkAsRead, onMarkAllRead }) => {
     
     const handleNotificationClick = (notification: Notification) => {
         if (!notification.read) {
@@ -17,10 +18,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ notificati
         }
         // Future enhancement: could also navigate to the complaint details
     };
+
+    const unreadCount = notifications.filter(n => !n.read).length;
     
     return (
-        <div className="absolute top-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border dark:border-gray-700 z-50">
-            <div className="flex justify-between items-center p-3 border-b dark:border-gray-700">
+        <div className="absolute top-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border dark:border-gray-700 z-50 flex flex-col">
+            <div className="flex justify-between items-center p-3 border-b dark:border-gray-700 flex-shrink-0">
                 <h4 className="font-semibold text-gray-800 dark:text-white">Notifications</h4>
                 <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                     <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
@@ -51,6 +54,15 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ notificati
                         <p className="text-sm">No notifications yet.</p>
                     </div>
                 )}
+            </div>
+             <div className="p-2 border-t dark:border-gray-700 flex-shrink-0">
+                <button
+                    onClick={onMarkAllRead}
+                    disabled={unreadCount === 0}
+                    className="w-full px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    Mark all as read
+                </button>
             </div>
         </div>
     );
