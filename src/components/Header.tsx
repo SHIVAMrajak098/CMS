@@ -26,6 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ title, user, onLogout, onNewComp
                 <button 
                     onClick={onToggleNotifications}
                     className="relative p-2 text-gray-500 bg-gray-100 rounded-full hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    aria-label={`Notifications (${unreadCount} unread)`}
                 >
                     <BellIcon className="h-6 w-6" />
                     {unreadCount > 0 && (

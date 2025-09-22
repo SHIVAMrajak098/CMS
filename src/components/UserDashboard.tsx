@@ -52,7 +52,6 @@ export default function UserDashboard({ user, onLogout }: { user: User; onLogout
             status: Status.Submitted,
             urgency: null,
             category: null,
-            // FIX: The 'department' property was missing. It is required when creating a complaint.
             department: null,
             assignedTo: null,
             location: location || undefined,
@@ -91,7 +90,6 @@ export default function UserDashboard({ user, onLogout }: { user: User; onLogout
 
     return (
         <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-            {/* FIX: The 'unreadCount' and 'onToggleNotifications' props were missing. Added default values as notifications are an admin-only feature. */}
             <Header title="My Complaints" user={user} onLogout={onLogout} onNewComplaint={() => setIsModalOpen(true)} unreadCount={0} onToggleNotifications={() => {}} />
             <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
                 {renderContent()}

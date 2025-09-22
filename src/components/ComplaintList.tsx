@@ -17,7 +17,7 @@ const urgencyColors: Record<Urgency, string> = {
 
 const ComplaintRow: React.FC<{ complaint: Complaint; onUpdateStatus: Function; onAssign: Function; admins: string[] }> = ({ complaint, onUpdateStatus, onAssign, admins }) => (
     <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{complaint.id}</td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{complaint.id.substring(0, 8)}...</td>
         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300 max-w-sm">
             <div className="truncate" title={complaint.text}>{complaint.text}</div>
         </td>

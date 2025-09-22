@@ -1,4 +1,5 @@
-/// <reference types="vite/client" />
+// FIX: Removed reference to "vite/client" to prevent a type definition resolution error.
+// The interfaces below provide the necessary types for import.meta.env for the application.
 
 interface ImportMetaEnv {
   readonly VITE_API_KEY: string;

@@ -15,7 +15,7 @@ const StatCard: React.FC<{ title: string; value: number | string; icon: React.El
     </div>
 );
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#A569BD'];
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
     if (percent === 0) return null;
@@ -87,7 +87,7 @@ export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaint
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip />
+                            <Tooltip wrapperClassName="dark:!bg-gray-900 !border-gray-700" contentStyle={{backgroundColor: 'transparent'}}/>
                             <Legend />
                         </PieChart>
                     </ResponsiveContainer>

@@ -28,6 +28,10 @@ const fromFirestore = (doc: any): Notification => {
 export const subscribeToNotifications = (
     callback: (notifications: Notification[]) => void
 ) => {
+    if (!db) {
+        console.error("Firestore is not initialized. Cannot subscribe to notifications.");
+        return () => {}; // Return an empty unsubscribe function
+    }
     const q = query(notificationsCollection, orderBy('timestamp', 'desc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -42,7 +46,11 @@ export const subscribeToNotifications = (
 
 export const addNotification = async (
     notification: Omit<Notification, 'id' | 'timestamp' | 'read'>
-): Promise<string> => {
+): Promise<string | null> => {
+    if (!db) {
+        console.error("Firestore is not initialized. Cannot add notification.");
+        return null;
+    }
     const newDoc = await addDoc(notificationsCollection, {
         ...notification,
         timestamp: serverTimestamp(),
@@ -53,6 +61,10 @@ export const addNotification = async (
 
 
 export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+    if (!db) {
+        console.error("Firestore is not initialized. Cannot update notification.");
+        return;
+    }
     const notificationRef = doc(db, 'notifications', notificationId);
     await updateDoc(notificationRef, {
         read: true,

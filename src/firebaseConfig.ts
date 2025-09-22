@@ -1,4 +1,7 @@
-import { initializeApp, FirebaseApp } from 'firebase/app';
+// FIX: The original named import from 'firebase/app' was causing module resolution errors.
+// By changing to a namespace import (`import * as firebaseApp from 'firebase/app'`),
+// we can work around potential issues with how named exports are resolved in the project's TypeScript configuration.
+import * as firebaseApp from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 
@@ -11,7 +14,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-let app: FirebaseApp | undefined;
+let app: firebaseApp.FirebaseApp | undefined;
 let db: Firestore | undefined;
 let auth: Auth | undefined;
 let initializationError: Error | null = null;
@@ -24,7 +27,7 @@ try {
     );
   }
   
-  app = initializeApp(firebaseConfig);
+  app = firebaseApp.initializeApp(firebaseConfig);
   db = getFirestore(app);
   auth = getAuth(app);
 
