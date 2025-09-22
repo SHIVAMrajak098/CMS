@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Complaint, Status, Urgency, Department } from '../types';
+import { Complaint, Status, Urgency, Department, User, Role } from '../types';
 import { format } from 'date-fns';
 
 interface ComplaintListProps {
@@ -7,6 +7,7 @@ interface ComplaintListProps {
   onUpdateStatus: (id: string, newStatus: Status) => void;
   onAssign: (id: string, adminId: string) => void;
   admins: string[];
+  user: User;
 }
 
 const urgencyColors: Record<Urgency, string> = {
@@ -61,7 +62,7 @@ const FilterSelect: React.FC<{ value: string; onChange: (e: React.ChangeEvent<HT
 );
 
 
-export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpdateStatus, onAssign, admins }) => {
+export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpdateStatus, onAssign, admins, user }) => {
     const [filterStatus, setFilterStatus] = useState<Status | 'all'>('all');
     const [filterUrgency, setFilterUrgency] = useState<Urgency | 'all'>('all');
     const [filterDepartment, setFilterDepartment] = useState<Department | 'all'>('all');
@@ -105,10 +106,12 @@ export const ComplaintList: React.FC<ComplaintListProps> = ({ complaints, onUpda
                         <option value="all">All Urgencies</option>
                         {Object.values(Urgency).map(u => <option key={u} value={u}>{u}</option>)}
                     </FilterSelect>
-                    <FilterSelect label="Department" value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value as Department | 'all')}>
-                        <option value="all">All Departments</option>
-                        {Object.values(Department).map(d => <option key={d} value={d}>{d}</option>)}
-                    </FilterSelect>
+                    {user.role === Role.Admin && (
+                        <FilterSelect label="Department" value={filterDepartment} onChange={(e) => setFilterDepartment(e.target.value as Department | 'all')}>
+                            <option value="all">All Departments</option>
+                            {Object.values(Department).map(d => <option key={d} value={d}>{d}</option>)}
+                        </FilterSelect>
+                    )}
                     <FilterSelect label="Assigned To" value={filterAssigned} onChange={(e) => setFilterAssigned(e.target.value)}>
                         <option value="all">All Admins</option>
                         <option value="unassigned">Unassigned</option>

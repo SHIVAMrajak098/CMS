@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { User, Complaint, Status, Notification } from '../types';
+import { User, Complaint, Status, Notification, Role } from '../types';
 import { subscribeToComplaints, updateComplaint, addComplaint } from '../services/complaintService';
 import { classifyComplaint } from '../services/geminiService';
 import { subscribeToNotifications, addNotification, markNotificationAsRead } from '../services/notificationService';
@@ -56,6 +56,13 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             unsubscribeNotifications();
         };
     }, []);
+    
+    const visibleComplaints = useMemo(() => {
+        if (user.role === Role.DepartmentHead && user.department) {
+            return complaints.filter(c => c.department === user.department);
+        }
+        return complaints;
+    }, [complaints, user.role, user.department]);
 
     const handleUpdateStatus = useCallback(async (id: string, newStatus: Status) => {
         const complaint = complaints.find(c => c.id === id);
@@ -105,6 +112,10 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
     };
     
     const unreadNotificationCount = notifications.filter(n => !n.read).length;
+    
+    const title = user.role === Role.DepartmentHead && user.department
+        ? `${user.department} Dashboard`
+        : 'Admin Dashboard';
 
     const renderContent = () => {
         if (loading) {
@@ -121,14 +132,15 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             return <ErrorDisplay message={error} />;
         }
         if (activeView === 'dashboard') {
-            return <DashboardView complaints={complaints} />;
+            return <DashboardView complaints={visibleComplaints} user={user} />;
         }
         return (
             <ComplaintList 
-              complaints={complaints} 
+              complaints={visibleComplaints} 
               onUpdateStatus={handleUpdateStatus} 
               onAssign={handleAssign}
               admins={ADMINS}
+              user={user}
             />
         );
     };
@@ -138,7 +150,7 @@ export default function Dashboard({ user, onLogout }: { user: User; onLogout: ()
             <Sidebar activeView={activeView} setActiveView={setActiveView} />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header 
-                    title="Admin Dashboard" 
+                    title={title}
                     user={user} 
                     onLogout={onLogout} 
                     onNewComplaint={() => setIsModalOpen(true)}

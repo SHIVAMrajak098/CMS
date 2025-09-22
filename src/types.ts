@@ -1,6 +1,7 @@
 export enum Role {
   User = 'USER',
   Admin = 'ADMIN',
+  DepartmentHead = 'DEPARTMENT_HEAD',
 }
 
 export enum Status {
@@ -38,6 +39,7 @@ export interface User {
   id: string;
   email: string;
   role: Role;
+  department?: Department;
 }
 
 export interface AuditLogEntry {

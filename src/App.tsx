@@ -5,7 +5,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import UserDashboard from './components/UserDashboard';
 import Blocked from './components/Blocked';
-import { User, Role } from './types';
+import { User, Role, Department } from './types';
 import DebugEnv from './components/DebugEnv';
 import useIsMobile from './hooks/useIsMobile';
 
@@ -21,13 +21,27 @@ function App() {
         }
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
             if (firebaseUser) {
-                // In a real app, role management would be more robust (e.g., custom claims)
-                const isAdmin = firebaseUser.email === 'admin@example.com';
+                const email = firebaseUser.email || '';
+                let role: Role = Role.User;
+                let department: Department | undefined = undefined;
+
+                if (email === 'admin@example.com') {
+                    role = Role.Admin;
+                } else if (email === 'manager@publicworks.com') {
+                    role = Role.DepartmentHead;
+                    department = Department.PublicWorks;
+                } else if (email === 'manager@utilities.com') {
+                    role = Role.DepartmentHead;
+                    department = Department.Utilities;
+                }
+                
                 setUser({
                     id: firebaseUser.uid,
-                    email: firebaseUser.email || 'No email',
-                    role: isAdmin ? Role.Admin : Role.User,
+                    email: email,
+                    role: role,
+                    department: department,
                 });
+
             } else {
                 setUser(null);
             }
@@ -60,7 +74,7 @@ function App() {
         return <Login />;
     }
 
-    if (user.role === Role.Admin) {
+    if (user.role === Role.Admin || user.role === Role.DepartmentHead) {
         return <Dashboard user={user} onLogout={handleLogout} />;
     }
 

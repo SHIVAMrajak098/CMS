@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Complaint, Status, Urgency, Category, Department } from '../types';
+import { Complaint, Status, Urgency, Category, Department, User, Role } from '../types';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartPieIcon, DocumentCheckIcon, ExclamationCircleIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
@@ -18,7 +18,7 @@ const StatCard: React.FC<{ title: string; value: number | string; icon: React.El
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#A569BD'];
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    if (percent === 0) return null;
+    if (percent === 0 || !percent) return null;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -30,7 +30,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     );
 };
 
-export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaints }) => {
+export const DashboardView: React.FC<{ complaints: Complaint[], user: User }> = ({ complaints, user }) => {
     const stats = useMemo(() => {
         const departmentCounts = complaints.reduce((acc, c) => {
             if (c.department) {
@@ -75,7 +75,11 @@ export const DashboardView: React.FC<{ complaints: Complaint[] }> = ({ complaint
                 <StatCard title="Total Complaints" value={stats.total} icon={ChartPieIcon} color="bg-blue-500" />
                 <StatCard title="Open Complaints" value={stats.open} icon={DocumentCheckIcon} color="bg-green-500" />
                 <StatCard title="High Urgency" value={stats.highUrgency} icon={ExclamationCircleIcon} color="bg-red-500" />
-                <StatCard title="Busiest Dept." value={stats.busiestDepartment} icon={BuildingOffice2Icon} color="bg-purple-500" />
+                {user.role === Role.Admin ? (
+                   <StatCard title="Busiest Dept." value={stats.busiestDepartment} icon={BuildingOffice2Icon} color="bg-purple-500" />
+                ) : (
+                   <StatCard title="Department Complaints" value={stats.total} icon={BuildingOffice2Icon} color="bg-purple-500" />
+                )}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
