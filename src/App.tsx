@@ -8,13 +8,22 @@ import Blocked from './components/Blocked';
 import { User, Role, Department } from './types';
 import DebugEnv from './components/DebugEnv';
 import useIsMobile from './hooks/useIsMobile';
+import PublicDashboard from './components/PublicDashboard';
 
 function App() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const isMobile = useIsMobile();
+    
+    // This is a simple client-side routing solution
+    const isPublicRoute = window.location.pathname === '/public';
 
     useEffect(() => {
+        if (isPublicRoute) {
+            setLoading(false);
+            return;
+        }
+
         if (initializationError) {
             setLoading(false);
             return;
@@ -49,11 +58,15 @@ function App() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [isPublicRoute]);
 
     const handleLogout = useCallback(() => {
         signOut(auth).catch((error) => console.error("Logout failed", error));
     }, []);
+
+    if (isPublicRoute) {
+        return <PublicDashboard />;
+    }
     
     if (initializationError) {
         return <DebugEnv error={initializationError} />;

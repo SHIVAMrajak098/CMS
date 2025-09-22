@@ -94,6 +94,11 @@ const Login: React.FC = () => {
                         <p><b className="font-medium text-gray-800 dark:text-gray-200">Password:</b> password</p>
                     </div>
                 </form>
+                 <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                     <a href="/public" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        View Public Analytics Dashboard
+                    </a>
+                </div>
             </div>
         </div>
     );
